@@ -119,8 +119,8 @@ namespace VersionManager
                 Process p = new Process();
                 p.StartInfo = startInfo;
                 p.Start();
-                p.StandardInput.WriteLine("taskkill /f /im amdaemon.exe > nul 2>&1");
                 p.StandardInput.WriteLine("taskkill /f /im Sinmai.exe > nul 2>&1");
+                p.StandardInput.WriteLine("taskkill /f /im amdaemon.exe > nul 2>&1");
                 p.WaitForExit();
             }).Start();
         }
