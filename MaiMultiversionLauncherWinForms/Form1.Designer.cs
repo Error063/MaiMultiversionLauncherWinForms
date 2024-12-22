@@ -31,9 +31,11 @@
             GameList = new ListBox();
             groupBox1 = new GroupBox();
             RemoveBtn = new Button();
-            AddBtn = new Button();
+            AddGameBtn = new Button();
             LaunchBtn = new Button();
             LoadOdd = new CheckBox();
+            LoadMod = new CheckBox();
+            LoadAMDaemon = new CheckBox();
             groupBox1.SuspendLayout();
             SuspendLayout();
             // 
@@ -47,33 +49,31 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(RemoveBtn);
-            groupBox1.Controls.Add(AddBtn);
             groupBox1.Controls.Add(GameList);
             groupBox1.Location = new Point(12, 12);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(356, 426);
+            groupBox1.Size = new Size(356, 375);
             groupBox1.TabIndex = 1;
             groupBox1.TabStop = false;
             groupBox1.Text = "游戏版本选择";
             // 
             // RemoveBtn
             // 
-            RemoveBtn.Location = new Point(178, 378);
+            RemoveBtn.Location = new Point(110, 393);
             RemoveBtn.Name = "RemoveBtn";
-            RemoveBtn.Size = new Size(172, 42);
+            RemoveBtn.Size = new Size(52, 42);
             RemoveBtn.TabIndex = 2;
-            RemoveBtn.Text = "删除游戏版本";
+            RemoveBtn.Text = "刷新";
             RemoveBtn.UseVisualStyleBackColor = true;
             // 
-            // AddBtn
+            // AddGameBtn
             // 
-            AddBtn.Location = new Point(6, 378);
-            AddBtn.Name = "AddBtn";
-            AddBtn.Size = new Size(173, 42);
-            AddBtn.TabIndex = 1;
-            AddBtn.Text = "添加游戏版本";
-            AddBtn.UseVisualStyleBackColor = true;
+            AddGameBtn.Location = new Point(12, 393);
+            AddGameBtn.Name = "AddGameBtn";
+            AddGameBtn.Size = new Size(92, 42);
+            AddGameBtn.TabIndex = 1;
+            AddGameBtn.Text = "导入游戏";
+            AddGameBtn.UseVisualStyleBackColor = true;
             // 
             // LaunchBtn
             // 
@@ -81,7 +81,7 @@
             LaunchBtn.Location = new Point(12, 444);
             LaunchBtn.Name = "LaunchBtn";
             LaunchBtn.RightToLeft = RightToLeft.No;
-            LaunchBtn.Size = new Size(253, 90);
+            LaunchBtn.Size = new Size(179, 90);
             LaunchBtn.TabIndex = 2;
             LaunchBtn.Text = "启动!";
             LaunchBtn.UseVisualStyleBackColor = true;
@@ -90,18 +90,44 @@
             // LoadOdd
             // 
             LoadOdd.AutoSize = true;
-            LoadOdd.Location = new Point(271, 487);
+            LoadOdd.Location = new Point(197, 511);
             LoadOdd.Name = "LoadOdd";
             LoadOdd.Size = new Size(91, 24);
             LoadOdd.TabIndex = 3;
             LoadOdd.Text = "加载odd";
             LoadOdd.UseVisualStyleBackColor = true;
             // 
+            // LoadMod
+            // 
+            LoadMod.AutoSize = true;
+            LoadMod.Location = new Point(197, 480);
+            LoadMod.Name = "LoadMod";
+            LoadMod.Size = new Size(96, 24);
+            LoadMod.TabIndex = 4;
+            LoadMod.Text = "加载Mod";
+            LoadMod.UseVisualStyleBackColor = true;
+            // 
+            // LoadAMDaemon
+            // 
+            LoadAMDaemon.AutoSize = true;
+            LoadAMDaemon.Checked = true;
+            LoadAMDaemon.CheckState = CheckState.Checked;
+            LoadAMDaemon.Location = new Point(197, 450);
+            LoadAMDaemon.Name = "LoadAMDaemon";
+            LoadAMDaemon.Size = new Size(148, 24);
+            LoadAMDaemon.TabIndex = 5;
+            LoadAMDaemon.Text = "加载AMDaemon";
+            LoadAMDaemon.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(379, 547);
+            Controls.Add(AddGameBtn);
+            Controls.Add(RemoveBtn);
+            Controls.Add(LoadAMDaemon);
+            Controls.Add(LoadMod);
             Controls.Add(LoadOdd);
             Controls.Add(LaunchBtn);
             Controls.Add(groupBox1);
@@ -126,6 +152,8 @@
         private Button LaunchBtn;
         private CheckBox LoadOdd;
         private Button RemoveBtn;
-        private Button AddBtn;
+        private Button AddGameBtn;
+        private CheckBox LoadMod;
+        private CheckBox LoadAMDaemon;
     }
 }

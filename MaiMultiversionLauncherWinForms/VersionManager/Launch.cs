@@ -44,7 +44,7 @@ namespace VersionManager
 
             GamePath.CreateSymbolicLink(tempPath, gameBasePath);
             GamePath.CreateSymbolicLink(tempPath, gameResPath);
-            Directory.CreateSymbolicLink(Path.Combine(tempPath, "Sinmai_Data", "StreamingAssets", "A888"), Path.Combine(resPath, "A888"));
+            GamePath.CreateSymbolicLink(Path.Combine(tempPath, "Sinmai_Data", "StreamingAssets", "A000"), Path.Combine(resPath, "A888"));
 
             StartSinmai(tempPath);
             return true;
@@ -62,7 +62,6 @@ namespace VersionManager
                     .Replace("##THE_OPTION_PATH##", Path.Combine(gameAmdPath, "option"))
                     .Replace("##THE_APPDATA_PATH##", Path.Combine(gameAmdPath, "appdata")));
 
-                File.WriteAllText(Path.Combine(segatoolsPath, "amdaemon.bat"), $"taskkill /f /im amdaemon.exe > nul 2>&1\r\n{segatoolsPath}\\inject -d -k {segatoolsPath}\\mai2hook.dll {gameAmdPath}\\amdaemon.exe -f -c {segatoolsPath}\\config_common.json {segatoolsPath}\\config_server.json {segatoolsPath}\\config_client.json\npause");
                 ProcessStartInfo startInfo = new ProcessStartInfo("cmd.exe")
                 {
                     WorkingDirectory = segatoolsPath,
@@ -74,8 +73,10 @@ namespace VersionManager
                 Process p = new Process();
                 p.StartInfo = startInfo;
                 p.Start();
-                p.StandardInput.WriteLine("amdaemon.bat");
-                p.WaitForExit();
+                p.StandardInput.WriteLine("taskkill /f /im amdaemon.exe > nul 2>&1");
+                p.StandardInput.WriteLine(
+                    $"start {segatoolsPath}\\inject -d -k {segatoolsPath}\\mai2hook.dll {gameAmdPath}\\amdaemon.exe -f -c {segatoolsPath}\\config_common.json {segatoolsPath}\\config_server.json {segatoolsPath}\\config_client.json");
+                // p.WaitForExit();
             }).Start();
 
         }
@@ -121,7 +122,7 @@ namespace VersionManager
                 p.Start();
                 p.StandardInput.WriteLine("taskkill /f /im Sinmai.exe > nul 2>&1");
                 p.StandardInput.WriteLine("taskkill /f /im amdaemon.exe > nul 2>&1");
-                p.WaitForExit();
+                // p.WaitForExit();
             }).Start();
         }
     }
