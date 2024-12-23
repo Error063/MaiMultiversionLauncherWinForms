@@ -5,8 +5,9 @@ namespace MaiMultiversionLauncherWinForms
 {
     public partial class MainForm : ReaLTaiizor.Forms.CrownForm
     {
-        private Launch _launch = new Launch("D:\\maimai");
-        private AddGameForm _addGameForm = new AddGameForm();
+        private Launch _launch = null;
+        private Config _config = new("config.yaml");
+        private AddGameForm _addGameForm = new();
         private bool _showOldVersionWarning = false;
         public MainForm()
         {
@@ -15,6 +16,24 @@ namespace MaiMultiversionLauncherWinForms
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(_config.config.settings.GamePath))
+            {
+                MessageBox.Show("Please Select The Game Folder First!");
+                FolderBrowserDialog dialog = new FolderBrowserDialog();
+                dialog.Description = "Please Select The Game Folder";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    var savePath = dialog.SelectedPath;
+                    var cfg = _config.config;
+                    cfg.settings.GamePath = savePath;
+                    _config.config = cfg;
+                    _config.Save(_config.config);
+                }
+            }
+            Task.Run(() => MessageBox.Show("Just wait a moment..."));
+
+            _launch = new Launch(_config.config.settings.GamePath);
             RemoveBtn_Click(sender, e);
         }
 
