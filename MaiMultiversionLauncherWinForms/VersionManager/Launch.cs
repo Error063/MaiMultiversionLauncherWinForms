@@ -13,14 +13,6 @@ namespace VersionManager
     {
         private GamePath _gamePath = new GamePath(RootPath);
 
-        [System.Runtime.InteropServices.DllImport("kernel32")]
-        private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
-
-        // 声明INI文件的读操作函数 GetPrivateProfileString()
-        [System.Runtime.InteropServices.DllImport("kernel32")]
-        private static extern int GetPrivateProfileString(string section, string key, string def, System.Text.StringBuilder retVal, int size, string filePath);
-
-
         public List<string> GetExistVersionList()
         {
             List<string> versions = new List<string>();
@@ -29,22 +21,40 @@ namespace VersionManager
                 if (Directory.Exists(Path.Combine(item, "AMDaemon")) && Directory.Exists(Path.Combine(item, "Resources")))
                     versions.Add(Path.GetFileName(item));
             }
+
+            versions.Reverse();
             return versions;
         }
 
-        public bool LaunchGame(string version, bool isEncrypted)
+        public bool LaunchGame(string version, bool isEncrypted = false, bool loadMod = false, bool loadAmDaemon = true, bool isOldVersion = false)
         {
             KillAll();
             var gameResPath = Path.Combine(_gamePath.GetGamePath(), version, "Resources") + "/";
             var resPath = _gamePath.GetGameResPath();
             var tempPath = _gamePath.GetTempPath(true);
             var gameBasePath = Path.Combine(_gamePath.GetGameBasePath(), isEncrypted ? "Encrypted" : "Decrypted") + "/";
+            var modPath = _gamePath.GetModPath() + "/";
 
-            StartAMDaemon(version);
+            if (loadAmDaemon) StartAMDaemon(version);
+            if (loadMod) GamePath.CreateSymbolicLink(tempPath, modPath);
 
             GamePath.CreateSymbolicLink(tempPath, gameBasePath);
             GamePath.CreateSymbolicLink(tempPath, gameResPath);
-            GamePath.CreateSymbolicLink(Path.Combine(tempPath, "Sinmai_Data", "StreamingAssets", "A000"), Path.Combine(resPath, "A888"));
+            if (isOldVersion)
+            {
+                foreach (var dir in Directory.GetDirectories(Path.Combine(resPath, "A888"), "*", SearchOption.TopDirectoryOnly))
+                {
+                    var path = dir.Replace(Path.GetDirectoryName(dir), "").Replace("\\", "").Replace("/", "");
+                    Console.WriteLine();
+                    Console.WriteLine(path);
+                    GamePath.CreateSymbolicLink(Path.Combine(tempPath, "Sinmai_Data", "StreamingAssets", "A000", path),
+                                        Path.Combine(resPath, "A888", path));
+                }
+                
+            }
+            else 
+                GamePath.CreateSymbolicLink(Path.Combine(tempPath, "Sinmai_Data", "StreamingAssets", "A000"), Path.Combine(resPath, "A888"));
+
 
             StartSinmai(tempPath);
             return true;
@@ -81,13 +91,13 @@ namespace VersionManager
 
         }
 
-        public static void StartSinmai(string command)
+        public static void StartSinmai(string path)
         {
             new Thread(() =>
             {
-                ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd", $"/c {command}//Sinmai.exe")
+                ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd", $"/c {path}//Sinmai.exe")
                 {
-                    WorkingDirectory = command,
+                    WorkingDirectory = path,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 };

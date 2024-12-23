@@ -15,6 +15,7 @@ namespace VersionManager
         private string _gameResPath;
         private string _segatoolsPath;
         private string _tempPath;
+        private string _modPath;
         public GamePath(string RootPath)
         {
             if (!string.IsNullOrEmpty(RootPath) && Directory.Exists(RootPath))
@@ -26,6 +27,7 @@ namespace VersionManager
                 _gameResPath = Path.Combine(_rootPath, "Resources");
                 _segatoolsPath = Path.Combine(_rootPath, "Segatools");
                 _tempPath = Path.Combine(_rootPath, "Temp");
+                _modPath = Path.Combine(_rootPath, "Mod");
 
                 if (!Directory.Exists(_gamePath))
                     Directory.CreateDirectory(_gamePath);
@@ -35,6 +37,8 @@ namespace VersionManager
                     Directory.CreateDirectory(_gameResPath);
                 if (!Directory.Exists(_segatoolsPath))
                     Directory.CreateDirectory(_segatoolsPath);
+                if (!Directory.Exists(_modPath))
+                    Directory.CreateDirectory(_modPath);
 
                 if (Directory.Exists(_tempPath))
                     Directory.Delete(_tempPath, true);
@@ -72,6 +76,10 @@ namespace VersionManager
 
             return _tempPath;
         }
+        public string GetModPath()
+        {
+            return _modPath;
+        }
 
         public static void CopyDirectory(string sourcePath, string destPath)
         {
@@ -99,10 +107,12 @@ namespace VersionManager
                 var relativePath = Path.GetRelativePath(pathToTarget, file);
                 var linkPath = Path.Combine(path, relativePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(linkPath));
-                if (!File.Exists(linkPath))
+                if (File.Exists(linkPath))
                 {
-                    File.CreateSymbolicLink(linkPath, file);
+                    File.Delete(linkPath);
                 }
+                File.CreateSymbolicLink(linkPath, file);
+
             }
         }
     }
