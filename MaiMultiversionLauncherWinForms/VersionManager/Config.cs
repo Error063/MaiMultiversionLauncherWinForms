@@ -16,12 +16,15 @@ namespace VersionManager
             Load();
         }
 
-        public struct ConfigStruct
+        public class ConfigStruct
         {
-            public struct Settings
+            public class Settings
             {
-                public string GamePath;
-                public string UnityPlayerCommandArgs;
+                public string GamePath = "";
+                public string UnityPlayerCommandArgs = "";
+                public bool LoadOdd = false;
+                public bool LoadMod = false;
+                public bool LoadAmDaemon = true;
             }
 
             public Settings settings;
@@ -44,21 +47,19 @@ namespace VersionManager
                 var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
                     .Build();
+                var serializer = new SerializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .Build();
                 if (!File.Exists(_yamlFilePath))
                 {
-                    var serializer = new SerializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance)
-                        .Build();
+
                     _config = new()
                     {
                         settings = new()
-                        {
-                            GamePath = "",
-                            UnityPlayerCommandArgs = ""
-                        }
                     };
                     File.WriteAllText(_yamlFilePath, serializer.Serialize(_config));
                 }
                 _config = deserializer.Deserialize<ConfigStruct>(File.ReadAllText(_yamlFilePath));
+                File.WriteAllText(_yamlFilePath, serializer.Serialize(_config));
             }
             catch (Exception ex)
             {

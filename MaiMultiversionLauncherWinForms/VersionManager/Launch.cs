@@ -9,9 +9,10 @@ using MaiMultiversionLauncherWinForms.VersionManager;
 
 namespace VersionManager
 {
-    internal class Launch(string RootPath)
+    internal class Launch(Config config)
     {
-        private GamePath _gamePath = new GamePath(RootPath);
+        private Config _config = config;
+        private GamePath _gamePath = new(config.config.settings.GamePath);
 
         public List<string> GetExistVersionList()
         {
@@ -91,11 +92,11 @@ namespace VersionManager
 
         }
 
-        public static void StartSinmai(string path)
+        public void StartSinmai(string path)
         {
             new Thread(() =>
             {
-                ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd", $"/c {path}//Sinmai.exe")
+                ProcessStartInfo processStartInfo = new ProcessStartInfo("cmd", $"/c {path}//Sinmai.exe {_config.config.settings.UnityPlayerCommandArgs}")
                 {
                     WorkingDirectory = path,
                     UseShellExecute = false,

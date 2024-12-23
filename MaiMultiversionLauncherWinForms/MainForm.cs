@@ -8,7 +8,6 @@ namespace MaiMultiversionLauncherWinForms
         private Launch _launch = null;
         private Config _config = new("config.yaml");
         private AddGameForm _addGameForm = new();
-        private bool _showOldVersionWarning = false;
         public MainForm()
         {
             InitializeComponent();
@@ -24,17 +23,21 @@ namespace MaiMultiversionLauncherWinForms
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    var savePath = dialog.SelectedPath;
                     var cfg = _config.config;
-                    cfg.settings.GamePath = savePath;
+                    cfg.settings.GamePath = dialog.SelectedPath;
                     _config.config = cfg;
                     _config.Save(_config.config);
                 }
             }
-            Task.Run(() => MessageBox.Show("Just wait a moment..."));
+            LoadOdd.Checked = _config.config.settings.LoadOdd;
+            LoadMod.Checked = _config.config.settings.LoadMod;
+            LoadAMDaemon.Checked = _config.config.settings.LoadAmDaemon;
+            Task.Run(() =>
+            {
+                _launch = new Launch(_config);
+                Invoke(() => RemoveBtn_Click(sender, e));
+            });
 
-            _launch = new Launch(_config.config.settings.GamePath);
-            RemoveBtn_Click(sender, e);
         }
 
         private void LaunchBtn_Click(object sender, EventArgs e)
@@ -51,21 +54,13 @@ namespace MaiMultiversionLauncherWinForms
             Task.Run(() =>
             {
                 if (_launch.LaunchGame(version, LoadOdd.Checked, LoadMod.Checked, LoadAMDaemon.Checked, IsOldVersion.Checked))
-                {
                     Invoke(() => { LaunchBtn.Enabled = true; });
-                }
             });
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Launch.KillAll();
-        }
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) => Launch.KillAll();
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            Application.Exit();
-        }
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e) => Application.Exit();
 
         private void RemoveBtn_Click(object sender, EventArgs e)
         {
@@ -114,14 +109,35 @@ namespace MaiMultiversionLauncherWinForms
             }
         }
 
-        private void AddGameBtn_Click(object sender, EventArgs e)
-        {
-            _addGameForm.ShowDialog();
-        }
+        private void AddGameBtn_Click(object sender, EventArgs e) => _addGameForm.ShowDialog();
 
         private void GameList_DoubleClick(object sender, EventArgs e)
         {
             if (LaunchBtn.Enabled) LaunchBtn_Click(sender, e);
+        }
+
+        private void LoadOdd_CheckedChanged(object sender, EventArgs e)
+        {
+            var cfg = _config.config;
+            cfg.settings.LoadOdd = LoadOdd.Checked;
+            _config.config = cfg;
+            _config.Save(_config.config);
+        }
+
+        private void LoadMod_CheckedChanged(object sender, EventArgs e)
+        {
+            var cfg = _config.config;
+            cfg.settings.LoadMod = LoadMod.Checked;
+            _config.config = cfg;
+            _config.Save(_config.config);
+        }
+
+        private void LoadAMDaemon_CheckedChanged(object sender, EventArgs e)
+        {
+            var cfg = _config.config;
+            cfg.settings.LoadAmDaemon = LoadAMDaemon.Checked;
+            _config.config = cfg;
+            _config.Save(_config.config);
         }
     }
 }

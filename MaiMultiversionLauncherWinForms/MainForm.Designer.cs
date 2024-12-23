@@ -117,16 +117,18 @@
             LoadOdd.Size = new Size(105, 21);
             LoadOdd.TabIndex = 3;
             LoadOdd.Text = "Load odd.sys";
+            LoadOdd.CheckedChanged += LoadOdd_CheckedChanged;
             // 
             // LoadMod
             // 
             LoadMod.AutoSize = true;
-            LoadMod.Location = new Point(178, 397);
+            LoadMod.Location = new Point(11, 397);
             LoadMod.Margin = new Padding(0);
             LoadMod.Name = "LoadMod";
             LoadMod.Size = new Size(88, 21);
             LoadMod.TabIndex = 4;
             LoadMod.Text = "Load Mod";
+            LoadMod.CheckedChanged += LoadMod_CheckedChanged;
             // 
             // LoadAMDaemon
             // 
@@ -139,11 +141,12 @@
             LoadAMDaemon.Size = new Size(129, 21);
             LoadAMDaemon.TabIndex = 5;
             LoadAMDaemon.Text = "Load AMDaemon";
+            LoadAMDaemon.CheckedChanged += LoadAMDaemon_CheckedChanged;
             // 
             // IsOldVersion
             // 
             IsOldVersion.AutoSize = true;
-            IsOldVersion.Location = new Point(11, 397);
+            IsOldVersion.Location = new Point(178, 397);
             IsOldVersion.Margin = new Padding(0);
             IsOldVersion.Name = "IsOldVersion";
             IsOldVersion.Size = new Size(109, 21);
