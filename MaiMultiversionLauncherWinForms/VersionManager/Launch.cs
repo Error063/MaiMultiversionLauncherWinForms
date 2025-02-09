@@ -13,16 +13,22 @@ namespace VersionManager
     {
         private Config _config = config;
         private GamePath _gamePath = new(config.config.settings.GamePath);
-
+        
         public List<string> GetExistVersionList()
-        {
+        { 
             List<string> versions = new List<string>();
-            foreach (var item in Directory.GetDirectories(_gamePath.GetGamePath()))
+            Parallel.ForEach(Directory.GetDirectories(_gamePath.GetGamePath()), directory =>
             {
-                if (Directory.Exists(Path.Combine(item, "AMDaemon")) && Directory.Exists(Path.Combine(item, "Resources")))
-                    versions.Add(Path.GetFileName(item));
-            }
-
+                if (Directory.Exists(Path.Combine(directory, "AMDaemon")) && Directory.Exists(Path.Combine(directory, "Resources")))
+                {
+                    lock (versions)
+                    {
+                        versions.Add(Path.GetFileName(directory));
+                    }
+                }
+            });
+            
+            versions.Sort();
             versions.Reverse();
             return versions;
         }
@@ -30,13 +36,20 @@ namespace VersionManager
         public bool LaunchGame(string version, bool isEncrypted = false, bool loadMod = false, bool loadAmDaemon = true, bool isOldVersion = false)
         {
             KillAll();
+            StartSinmai(RenderGameFileTree(version, isEncrypted, loadMod, isOldVersion));
+            if (loadAmDaemon) StartAMDaemon(version);
+
+            return true;
+        }
+        
+        public string RenderGameFileTree(string version, bool isEncrypted = false, bool loadMod = false, bool isOldVersion = false)
+        {
             var gameResPath = Path.Combine(_gamePath.GetGamePath(), version, "Resources") + "/";
             var resPath = _gamePath.GetGameResPath();
             var tempPath = _gamePath.GetTempPath(true);
             var gameBasePath = Path.Combine(_gamePath.GetGameBasePath(), isEncrypted ? "Encrypted" : "Decrypted") + "/";
             var modPath = _gamePath.GetModPath() + "/";
 
-            if (loadAmDaemon) StartAMDaemon(version);
             if (loadMod) GamePath.CreateSymbolicLink(tempPath, modPath);
 
             GamePath.CreateSymbolicLink(tempPath, gameBasePath);
@@ -46,19 +59,15 @@ namespace VersionManager
                 foreach (var dir in Directory.GetDirectories(Path.Combine(resPath, "A888"), "*", SearchOption.TopDirectoryOnly))
                 {
                     var path = dir.Replace(Path.GetDirectoryName(dir), "").Replace("\\", "").Replace("/", "");
-                    Console.WriteLine();
-                    Console.WriteLine(path);
                     GamePath.CreateSymbolicLink(Path.Combine(tempPath, "Sinmai_Data", "StreamingAssets", "A000", path),
-                                        Path.Combine(resPath, "A888", path));
+                        Path.Combine(resPath, "A888", path));
                 }
                 
             }
             else 
                 GamePath.CreateSymbolicLink(Path.Combine(tempPath, "Sinmai_Data", "StreamingAssets", "A000"), Path.Combine(resPath, "A888"));
 
-
-            StartSinmai(tempPath);
-            return true;
+            return tempPath;
         }
 
         public void StartAMDaemon(string version)
@@ -136,5 +145,9 @@ namespace VersionManager
                 // p.WaitForExit();
             }).Start();
         }
+        public void CleanTemp()
+        {
+            _gamePath.GetTempPath(true);
+        }        
     }
 }

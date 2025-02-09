@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using VersionManager;
 
 namespace MaiMultiversionLauncherWinForms
@@ -15,6 +16,7 @@ namespace MaiMultiversionLauncherWinForms
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            SwitchAllControls(false);
             if (string.IsNullOrEmpty(_config.config.settings.GamePath))
             {
                 MessageBox.Show("Please Select The Game Folder First!");
@@ -35,13 +37,21 @@ namespace MaiMultiversionLauncherWinForms
             Task.Run(() =>
             {
                 _launch = new Launch(_config);
+                ReportStatus();
                 Invoke(() => RemoveBtn_Click(sender, e));
             });
-
         }
+        
+        public void ReportStatus(string status="Ready") => Invoke(() => StatusReport.Text = $"Status: {status}");
 
         private void LaunchBtn_Click(object sender, EventArgs e)
         {
+            if (_launch == null)
+            {
+                MessageBox.Show("Program was not initialized all data successfully!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             var version = GameList.SelectedItem?.ToString();
 
             if (GameList.Items.Count <= 0 || string.IsNullOrEmpty(version))
@@ -51,22 +61,51 @@ namespace MaiMultiversionLauncherWinForms
                 return;
             }
             LaunchBtn.Enabled = false;
+            ReportStatus("Starting game...");
+            SwitchAllControls(false);
             Task.Run(() =>
             {
                 if (_launch.LaunchGame(version, LoadOdd.Checked, LoadMod.Checked, LoadAMDaemon.Checked, IsOldVersion.Checked))
-                    Invoke(() => { LaunchBtn.Enabled = true; });
+                    Invoke(() =>
+                    {
+                        LaunchBtn.Enabled = true;
+                        ReportStatus();
+                        SwitchAllControls(true);
+                    });
             });
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e) => Launch.KillAll();
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+        }
+        
+        private void SwitchAllControls(bool enabled)
+        {
+            Invoke(() => SetControlsEnabled(this, enabled));
+        }
+
+        private void SetControlsEnabled(Control parent, bool enabled)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                control.Enabled = enabled;
+                if (control.HasChildren) SetControlsEnabled(control, enabled);
+            }
+        }
+
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e) => Application.Exit();
 
         private void RemoveBtn_Click(object sender, EventArgs e)
         {
-
+            if (_launch == null)
+            {
+                MessageBox.Show("Program was not initialized all data successfully!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             Task.Run(() =>
             {
+                SwitchAllControls(false);
                 Invoke(() =>
                 {
                     GameList.Items.Clear();
@@ -80,7 +119,11 @@ namespace MaiMultiversionLauncherWinForms
                 }
                 Invoke(() =>
                 {
-                    if (GameList.Items.Count > 0) GameList.SelectedIndex = 0;
+                    if (GameList.Items.Count > 0)
+                    {
+                        SwitchAllControls(true);
+                        GameList.SelectedIndex = 0;
+                    }
                     else LaunchBtn.Enabled = false;
                 });
             });
@@ -138,6 +181,79 @@ namespace MaiMultiversionLauncherWinForms
             cfg.settings.LoadAmDaemon = LoadAMDaemon.Checked;
             _config.config = cfg;
             _config.Save(_config.config);
+        }
+
+        private void RenderFileTreeBtn_Click(object sender, EventArgs e)
+        {
+            var version = GameList.SelectedItem?.ToString();
+
+            if (GameList.Items.Count <= 0 || string.IsNullOrEmpty(version))
+            {
+                RenderFileTreeBtn.Enabled = false;
+                MessageBox.Show("Empty Game List£¡");
+                return;
+            }
+            ReportStatus("Rendering temporary game folder...");
+            SwitchAllControls(false);
+            Task.Run(() =>
+            {
+                Process.Start("explorer", _launch.RenderGameFileTree(version, LoadOdd.Checked, LoadMod.Checked, IsOldVersion.Checked));
+                Invoke(() =>
+                {
+                    ReportStatus();
+                    SwitchAllControls(true);
+                });
+            });
+
+        }
+
+        private void CleanTempBtn_Click(object sender, EventArgs e)
+        {
+            Task.Run(() =>
+            {
+                if (_launch == null)
+                {
+                    Invoke(() => MessageBox.Show("Program was not initialized all data successfully!", "Warning",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning));
+                    return;
+                }
+                ReportStatus("Removing temporary folder...");
+                SwitchAllControls(false);
+                _launch.CleanTemp();
+                Invoke(() =>
+                {
+                    MessageBox.Show("Temp Folder Was Cleaned", "Info", MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    ReportStatus();
+                    SwitchAllControls(true);
+                });
+            });
+        }
+
+        private void toolStripStatusLabel1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void KillAllBtn_Click(object sender, EventArgs e)
+        {
+            Task.Run(() =>
+            {
+                if (_launch == null)
+                {
+                    Invoke(() => MessageBox.Show("Program was not initialized all data successfully!", "Warning",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning));
+                    return;
+                }
+
+                ReportStatus("Killing all process...");
+                SwitchAllControls(false);
+                Launch.KillAll();
+                ReportStatus();
+                SwitchAllControls(true);
+            });
         }
     }
 }

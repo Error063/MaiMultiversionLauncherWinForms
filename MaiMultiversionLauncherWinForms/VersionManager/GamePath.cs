@@ -83,11 +83,11 @@ namespace VersionManager
 
         public static void CopyDirectory(string sourcePath, string destPath)
         {
-            string floderName = Path.GetFileName(sourcePath);
-            DirectoryInfo di = Directory.CreateDirectory(Path.Combine(destPath, floderName));
+            string folderName = Path.GetFileName(sourcePath);
+            DirectoryInfo di = Directory.CreateDirectory(Path.Combine(destPath, folderName));
             string[] files = Directory.GetFileSystemEntries(sourcePath);
 
-            foreach (string file in files)
+            Parallel.ForEach(files, file =>
             {
                 if (Directory.Exists(file))
                 {
@@ -97,23 +97,28 @@ namespace VersionManager
                 {
                     File.Copy(file, Path.Combine(di.FullName, Path.GetFileName(file)), true);
                 }
-            }
+            });
         }
+
 
         public static void CreateSymbolicLink(string path, string pathToTarget)
         {
-            foreach (var file in Directory.GetFiles(pathToTarget, "*", SearchOption.AllDirectories))
+            var files = Directory.GetFiles(pathToTarget, "*", SearchOption.AllDirectories);
+
+            Parallel.ForEach(files, file =>
             {
                 var relativePath = Path.GetRelativePath(pathToTarget, file);
                 var linkPath = Path.Combine(path, relativePath);
                 Directory.CreateDirectory(Path.GetDirectoryName(linkPath));
+
                 if (File.Exists(linkPath))
                 {
                     File.Delete(linkPath);
                 }
-                File.CreateSymbolicLink(linkPath, file);
 
-            }
+                File.CreateSymbolicLink(linkPath, file);
+            });
         }
+
     }
 }
